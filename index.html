@@ -40,7 +40,17 @@ summary{font-weight:800;cursor:pointer}
 .seat.t0{border-color:#4fa3ff88}.seat.t1{border-color:#ff8a4f88}
 .seat.cur{background:#ffd35a40;border-color:#ffd35a}
 #tbl{padding:12px 0;border-top:2px dashed #ffffff33;border-bottom:2px dashed #ffffff33;min-height:170px}
-.info{text-align:center;margin-bottom:10px}
+.info{position:relative;display:flex;align-items:center;justify-content:center;min-height:calc(clamp(54px,15vw,68px)*1.45 + 24px);padding:0 78px;margin-bottom:8px}
+.im{text-align:center}
+.vira{position:absolute;right:2px;top:0;text-align:center;font-size:.6rem;font-weight:800;letter-spacing:.1em;cursor:pointer}
+.vira .card{--w:clamp(54px,15vw,68px);transform:rotate(7deg);border-radius:8px;border-width:1.5px;padding:3px 3px 2px;margin:2px auto 3px}
+.vira .ph{border-width:1px}
+.vira .ph>span{font-size:1rem}
+.vira .cr{padding:1px 2px;min-width:14px;top:2px;left:2px;border-radius:4px}
+.vira .cr b{font-size:.62rem}.vira .cr i{font-size:.55rem}
+.vira .cr.b{display:none}
+.vira .nm2{font-size:.43rem;letter-spacing:0;min-height:2em;padding:2px 0 1px;-webkit-hyphens:manual;hyphens:manual}
+.vira small{display:block;opacity:.9;color:#ffd35a}
 .info b{font-size:1.5rem;color:#ffd35a;margin:0 4px}
 .dots{display:inline-flex;gap:6px;margin-left:10px;vertical-align:middle}
 .dots i{width:12px;height:12px;border-radius:50%;background:#888}
@@ -165,7 +175,7 @@ function howto(){
   modal('Como jogar',[['Entendi']],`<ol>
   <li><b>Objetivo:</b> o time que chegar primeiro a 12 pontos vence a partida. Com 4 ou 6 jogadores os times se alternam na mesa.</li>
   <li><b>Cartas:</b> ${L?'baralho <b>limpo</b>, com 24 cartas (só Q, J, K, A, 2 e 3)':'baralho completo, com 40 cartas'}, e cada carta é um jogador de futebol. Cada pessoa recebe 3 cartas por mão.</li>
-  <li><b>Vira e manilha:</b> no começo de cada mão uma carta é virada na mesa, a vira. A manilha é o valor seguinte ao da vira, na ordem ${w} (depois do 3 volta ao ${L?'Q':'4'}). Os 4 jogadores desse valor viram as cartas mais fortes da mão. Se a vira é um ${L?'J, as manilhas são os K':'6, as manilhas são os 7'}. O naipe da vira não importa.</li>
+  <li><b>Vira e manilha:</b> no começo de cada mão uma carta é virada na mesa, a vira. A vira fica no cantinho da mesa (toque nela para ver as manilhas). A manilha é o valor seguinte ao da vira, na ordem ${w} (depois do 3 volta ao ${L?'Q':'4'}). Os 4 jogadores desse valor viram as cartas mais fortes da mão. Se a vira é um ${L?'J, as manilhas são os K':'6, as manilhas são os 7'}. O naipe da vira não importa.</li>
   <li><b>Ordem entre as manilhas:</b> o naipe desempata. Zap (♣) é a mais forte, depois Copas (♥), Espadilha (♠) e Pica-fumo (♦). Duas manilhas nunca empatam. Nas cartas comuns o naipe não conta. Toda manilha que aparecer na sua mão (ou na mesa) vem com a etiqueta <b>★ MANILHA</b> e o nome dela.</li>
   <li><b>Depois das manilhas:</b> ${rest}, nessa ordem. O valor que virou manilha sai dessa lista nessa mão.</li>
   <li><b>Rodada e mão:</b> cada jogador joga uma carta e a mais forte leva a rodada para o time dele. Quem ganhou começa a próxima. Cada mão tem até 3 rodadas, o time que ganhar 2 leva a mão e marca 1 ponto.</li>
@@ -218,6 +228,7 @@ function hw(r){
 }
 const canT=p=>!H.over&&!H.lock&&!H.pend&&!H.ferro&&H.turn===p&&H.v<12&&H.last!==tm(p)&&H.m11!==tm(p);
 
+function viraClick(){const m=$('man');m.open=true;m.scrollIntoView({behavior:'smooth',block:'start'})}
 function backH(extra=''){return `<div class="card cback ${extra}"><div class="ph"><span>⚽</span></div></div>`}
 const pw=c=>c.hid?-1:c.p;
 function decModal(){
@@ -247,7 +258,7 @@ function render(){
   const me=meIdx();
   $('seats').innerHTML=H.c.map((c,i)=>`<div class="seat t${tm(i)} ${i===H.turn&&!H.over?'cur':''}">${pn(i)}<small>${G.mode==='cpu'?'':tn[tm(i)]+' · '}${c.length} carta${c.length===1?'':'s'}</small></div>`).join('');
   const info=H.ferro?'<b>Mão de ferro</b>vale o jogo':`Mão vale<b>${H.v}</b>${H.v>1?'pontos':'ponto'}${H.m11>=0?'<small>mão de onze</small>':''}`;
-  $('tbl').innerHTML=`<div class="info">${info}<span class="dots">${H.r.map(w=>`<i class="${w==='t'?'':w===tm(me)?'w':'l'}"></i>`).join('')}</span></div>
+  $('tbl').innerHTML=`<div class="info"><div class="im">${info}<span class="dots">${H.r.map(w=>`<i class="${w==='t'?'':w===tm(me)?'w':'l'}"></i>`).join('')}</span></div><div class="vira" role="button" tabindex="0" aria-label="Vira, toque para ver as manilhas" onclick="viraClick()">${cardH(H.vira)}<small>VIRA</small></div></div>
     <div class="slots">${H.t.map((c,i)=>`<div class="ts">${c?(c.hid?backH():cardH(c)):'<div class="slot"></div>'}${pn(i)}${c&&c.hid?' (escondida)':''}</div>`).join('')}</div>`;
   const can=!H.over&&!H.lock&&!H.pend&&H.turn===me;
   const ex=i=>can?'ok" tabindex="0" data-i="'+i:'';
